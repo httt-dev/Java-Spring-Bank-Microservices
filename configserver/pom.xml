@@ -9,9 +9,9 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.ngx</groupId>
-	<artifactId>configServer</artifactId>
+	<artifactId>configserver</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>configServer</name>
+	<name>configserver</name>
 	<description>Configuration Server for bank microservices</description>
 	<properties>
 		<java.version>1.8</java.version>

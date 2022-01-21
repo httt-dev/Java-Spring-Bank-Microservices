@@ -1,0 +1,72 @@
+version: "3.8"
+
+services:
+  
+  configserver:
+    image: hoanguyenlab/configserver:latest
+    mem_limit: 700m
+    ports:
+      - "8701:8701"
+    networks:
+      - ngx-network
+      
+  accounts:
+    image: hoanguyenlab/accounts:latest
+    mem_limit: 700m
+    ports:
+      - "8080:8080"
+    depends_on:
+      - configserver
+    deploy:
+      restart_policy:
+        condition: on-failre
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      SPRING_CONFIG_IMPORT: configserver:http://configserver:8701
+    networks:
+      - ngx-network
+      
+  loans:
+    image: hoanguyenlab/loans:latest
+    mem_limit: 700m
+    ports:
+      - "8090:8090"
+    networks:
+      - ngx-network
+    depends_on:
+      - configserver
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay : 5s
+        max_attempts: 3
+        window: 120s
+    enviroment:
+      SPRING_PROFILES_ACTIVE: prod
+      SPRING_CONFIG_IMPORT: configserver:http://configserver:8701
+    
+  cards:
+    image: hoanguyenlab/cards:latest
+    mem_limit: 700m
+    ports:
+      - "9000:9000"
+    networks:
+      - ngx-network
+    depends_on:
+      - configserver
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay : 5s
+        max_attempts: 3
+        window: 120s
+    enviroment:
+      SPRING_PROFILES_ACTIVE: prod
+      SPRING_CONFIG_IMPORT: configserver:http://configserver:8701
+      
+networks:
+  ngx-network:
+  
