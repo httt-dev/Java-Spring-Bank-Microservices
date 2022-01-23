@@ -10,6 +10,25 @@ services:
     networks:
       - ngx-network
       
+  eurekaserver:
+    image: hoanguyenlab/eurekaserver:latest
+    mem_limit: 700m
+    ports:
+      - "8070:8070"
+    networks:
+      - ngxnetwork
+    depends_on:
+      - configserver
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+      SPRING_CONFIG_IMPORT: configserver:http://configserver:8071/
+      
   accounts:
     image: hoanguyenlab/accounts:latest
     mem_limit: 700m
@@ -17,6 +36,7 @@ services:
       - "8080:8080"
     depends_on:
       - configserver
+      - eurekaserver
     deploy:
       restart_policy:
         condition: on-failre
@@ -26,6 +46,7 @@ services:
     environment:
       SPRING_PROFILES_ACTIVE: dev
       SPRING_CONFIG_IMPORT: configserver:http://configserver:8701
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eurekaserver:8070/eureka/
     networks:
       - ngx-network
       
@@ -38,6 +59,7 @@ services:
       - ngx-network
     depends_on:
       - configserver
+      - eurekaserver
     deploy:
       restart_policy:
         condition: on-failure
@@ -47,7 +69,8 @@ services:
     enviroment:
       SPRING_PROFILES_ACTIVE: dev
       SPRING_CONFIG_IMPORT: configserver:http://configserver:8701
-    
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eurekaserver:8070/eureka/
+      
   cards:
     image: hoanguyenlab/cards:latest
     mem_limit: 700m
@@ -57,6 +80,7 @@ services:
       - ngx-network
     depends_on:
       - configserver
+      - eurekaserver
     deploy:
       restart_policy:
         condition: on-failure
@@ -66,6 +90,7 @@ services:
     enviroment:
       SPRING_PROFILES_ACTIVE: dev
       SPRING_CONFIG_IMPORT: configserver:http://configserver:8701
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eurekaserver:8070/eureka/
       
 networks:
   ngx-network:

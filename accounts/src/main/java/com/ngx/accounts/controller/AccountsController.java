@@ -1,5 +1,7 @@
 package com.ngx.accounts.controller;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -11,9 +13,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.ngx.accounts.config.AccountsServiceConfig;
 import com.ngx.accounts.model.Accounts;
+import com.ngx.accounts.model.Cards;
 import com.ngx.accounts.model.Customer;
+import com.ngx.accounts.model.CustomerDetails;
+import com.ngx.accounts.model.Loans;
 import com.ngx.accounts.model.Properties;
 import com.ngx.accounts.repository.AccountsRepository;
+import com.ngx.accounts.service.client.CardsFeignClient;
+import com.ngx.accounts.service.client.LoansFeignClient;
 
 @RestController
 public class AccountsController {
@@ -23,6 +30,12 @@ public class AccountsController {
 
 	@Autowired
 	AccountsServiceConfig accountsConfig;   
+	
+	@Autowired
+	LoansFeignClient loansFeignClient;
+	
+	@Autowired
+	CardsFeignClient cardsFeignClient;
 	
 	@PostMapping("/myAccount")
 	public Accounts getAccountDetails(@RequestBody Customer customer) {
@@ -48,5 +61,17 @@ public class AccountsController {
 				accountsConfig.getMailDetails(),accountsConfig.getActiveBranches());
 		String jsonStr = ow.writeValueAsString(properties);
 		return jsonStr;
+	}
+	
+	@PostMapping("/myCustomerDetails")
+	public CustomerDetails myCustomerDetails(@RequestBody Customer customer) {
+		Accounts accounts = accountsRepository.findByCustomerId(customer.getCustomerId());
+		List<Loans> loans = loansFeignClient.getLoanDetails(customer);
+		List<Cards> cards = cardsFeignClient.getCardDetails(customer);
+		CustomerDetails customerDetails = new CustomerDetails();
+		customerDetails.setAccounts(accounts);
+		customerDetails.setLoans(loans);
+		customerDetails.setCards(cards);
+		return customerDetails;
 	}
 }
